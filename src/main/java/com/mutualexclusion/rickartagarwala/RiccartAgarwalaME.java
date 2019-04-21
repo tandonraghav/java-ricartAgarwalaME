@@ -1,4 +1,4 @@
-package com.myntra.com.me;
+package com.mutualexclusion.rickartagarwala;
 
 import java.util.function.Function;
 

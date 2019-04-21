@@ -1,11 +1,9 @@
-package com.myntra.controller;
+package com.mutualexclusion.controller;
 
-import com.myntra.com.me.Message;
-import com.myntra.com.me.RiccartAgarwalaME;
-import com.myntra.com.me.SystemSettings;
+import com.mutualexclusion.rickartagarwala.Message;
+import com.mutualexclusion.rickartagarwala.RiccartAgarwalaME;
+import com.mutualexclusion.rickartagarwala.SystemSettings;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 

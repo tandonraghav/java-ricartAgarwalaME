@@ -1,6 +1,4 @@
-package com.myntra.com.me;
-
-import org.springframework.util.StringUtils;
+package com.mutualexclusion.rickartagarwala;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

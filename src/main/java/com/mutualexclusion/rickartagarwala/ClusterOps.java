@@ -1,10 +1,9 @@
-package com.myntra.com.me;
+package com.mutualexclusion.rickartagarwala;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Map;
 

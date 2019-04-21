@@ -1,4 +1,4 @@
-package com.myntra.com.me;
+package com.mutualexclusion.rickartagarwala;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

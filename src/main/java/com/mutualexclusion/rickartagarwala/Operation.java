@@ -1,4 +1,4 @@
-package com.myntra.com.me;
+package com.mutualexclusion.rickartagarwala;
 
 public enum Operation {
 

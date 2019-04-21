@@ -1,12 +1,10 @@
-package com.myntra.com.me;
+package com.mutualexclusion.rickartagarwala;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.PriorityQueue;
 
 @Component
 public class MessagePriorityQueue {

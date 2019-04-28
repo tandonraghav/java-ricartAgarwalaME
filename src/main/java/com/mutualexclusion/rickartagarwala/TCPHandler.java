@@ -1,11 +1,16 @@
 package com.mutualexclusion.rickartagarwala;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
 public class TCPHandler extends Thread {
+
+    Logger logger = LoggerFactory.getLogger(TCPHandler.class);
 
     private Socket clientSocket;
     private PrintWriter out;
@@ -26,8 +31,9 @@ public class TCPHandler extends Thread {
                     new InputStreamReader(clientSocket.getInputStream()));
 
             String inputLine = in.readLine();
-            System.out.println("Message Rcvd = " + inputLine);
+            logger.info("Message Rcvd = " + inputLine);
             String[] msgs = inputLine.split("&");
+            //logger.info(msgs[0]);
             Operation op = Operation.valueOf(msgs[0]);
             switch (op.name()) {
                 case "OK":
@@ -35,6 +41,7 @@ public class TCPHandler extends Thread {
                     break;
 
                 case "REQUEST":
+                    //logger.info("Handling REQUEST msg");
                     riccartAgarwalaME.reply(createMsg(msgs), "");
                     break;
 
@@ -43,7 +50,7 @@ public class TCPHandler extends Thread {
                     break;
 
                 default:
-                    System.out.println("No operation to do!!!");
+                    logger.info("No operation to do!!!");
                     break;
             }
 

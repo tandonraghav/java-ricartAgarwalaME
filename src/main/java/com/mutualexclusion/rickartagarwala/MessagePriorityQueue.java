@@ -5,13 +5,14 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class MessagePriorityQueue {
 
     @Autowired SystemSettings systemSettings;
 
-    private Map<String,Message> messageMap=new HashMap<>();
+    private Map<String,Message> messageMap=new ConcurrentHashMap<>();
 
 //    private PriorityQueue<Message> messages=new PriorityQueue<>(new Comparator<Message>() {
 //        @Override
@@ -31,7 +32,14 @@ public class MessagePriorityQueue {
     public boolean isCurrentMessageGreaterThan(Message m){
         Message currentNodeMsg=messageMap.get(systemSettings.getNodeId());
 
-        if(currentNodeMsg.getTimestamp()>m.getTimestamp()) return true;
+        if(currentNodeMsg!=null && currentNodeMsg.getTimestamp()>m.getTimestamp()) {
+            System.out.println(currentNodeMsg.getPId()+" "+m.getPId());
+            return true;
+        }
+        if(currentNodeMsg!=null && currentNodeMsg.getTimestamp()==m.getTimestamp()){
+            System.out.println(currentNodeMsg.getPId()+" "+m.getPId());
+            return currentNodeMsg.getPId().compareTo(m.getPId())>0;
+        }
         return false;
     }
 

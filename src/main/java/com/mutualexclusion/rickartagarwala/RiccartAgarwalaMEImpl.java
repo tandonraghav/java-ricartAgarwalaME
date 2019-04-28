@@ -1,5 +1,7 @@
 package com.mutualexclusion.rickartagarwala;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -7,9 +9,11 @@ import java.util.function.Function;
 
 @Service
 public class RiccartAgarwalaMEImpl implements RiccartAgarwalaME{
+    Logger logger = LoggerFactory.getLogger(RiccartAgarwalaMEImpl.class);
 
     @Autowired private ClusterOps clusterOps;
     @Autowired private MessagePriorityQueue messagePriorityQueue;
+    @Autowired private SystemSettings systemSettings;
 
     boolean csReqd=false;
     boolean isCSExecuting=false;
@@ -20,32 +24,35 @@ public class RiccartAgarwalaMEImpl implements RiccartAgarwalaME{
     */
     @Override
     public synchronized void request(Message message, String nodeId) {
-        System.out.println("Going to request for CS ....");
-        //if(!csReqd) return;
+        logger.info("Going to request for CS ....");
         csReqd=true;
+        if(!messagePriorityQueue.getPriorityMessageQueue().containsKey(systemSettings.getNodeId())){
+            messagePriorityQueue.getPriorityMessageQueue().put(systemSettings.getNodeId(),message);
+        }
         clusterOps.sendReqToAll(message);
     }
 
     @Override
-    public synchronized void reply(Message message, String nodeId) {
+    public void reply(Message message, String nodeId) {
+        //logger.info("Handling REQUEST "+csReqd+" "+isCSExecuting);
         if(isCSExecuting) {
-            System.out.println("Currently executing CS. Adding to deferred Queue!");
+            logger.info("Currently executing CS. Adding to deferred Queue!");
             clusterOps.addToDeferredRequests(message);
             return;
         }
         if(csReqd){
            boolean isGreater = messagePriorityQueue.isCurrentMessageGreaterThan(message);
            if(isGreater){
-               System.out.println("Timestamp is Lesser. So sending OK!");
+               logger.info("Timestamp is Lesser. So sending OK!");
                //Reply back OK.
                clusterOps.sendOK(message.getNodeId());
            }else{
-               System.out.println("Timestamp is Greater. So sending OK!");
+               logger.info("Timestamp is Greater. So adding to deffered requests!");
                //Add msg to deferred req.
                clusterOps.addToDeferredRequests(message);
            }
         }else{
-            System.out.println("CS Not reqd. sending OK!");
+            logger.info("CS Not reqd. sending OK!");
             //Send OK to nodeID
             clusterOps.sendOK(message.getNodeId());
         }
@@ -53,22 +60,23 @@ public class RiccartAgarwalaMEImpl implements RiccartAgarwalaME{
 
     @Override
     public void release() {
-        System.out.println("Message released");
+        logger.info("Message released");
     }
 
     @Override
     public synchronized void executeCS(Function<String,String> fn) {
         try{
             while(true){
+                //logger.info("In execute CS...");
                 if(!csReqd) return;
                 boolean canExecute=clusterOps.canExecuteCS();
                 if(canExecute){
                     //call fn() in real case
                     isCSExecuting=true;
                     try {
-                        System.out.println("Executing CS....");
+                        logger.info("Executing CS....");
                         Thread.sleep(2000);
-                        System.out.println("Executing CS Done!!! ....");
+                        logger.info("Executing CS Done!!! ....");
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -79,7 +87,6 @@ public class RiccartAgarwalaMEImpl implements RiccartAgarwalaME{
         }finally{
             //send release CS.
             clusterOps.sendReleaseMsg();
-            System.out.println("Send RELEASE Msg ...");
             clusterOps.reset();
             isCSExecuting=false;
             csReqd=false;

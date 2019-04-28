@@ -1,21 +1,26 @@
 package com.mutualexclusion.rickartagarwala;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class ClusterOps {
+
+    Logger logger = LoggerFactory.getLogger(ClusterOps.class);
 
     @Autowired private MessagePriorityQueue messagePriorityQueue;
     @Autowired private TCPConnection tcpConnection;
     @Autowired private SystemSettings systemSettings;
 
-    private Map<String,Processes> processes=new HashMap<>();
-    private Map<String,Integer> recievedSignal=new HashMap<>();
+    private Map<String,Processes> processes=new ConcurrentHashMap<>();
+    private Map<String,Integer> recievedSignal=new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init(){
@@ -42,7 +47,7 @@ public class ClusterOps {
 
         for(Map.Entry<String,Processes> p:processes.entrySet()){
             try{
-                System.out.println("Sending msg = "+msg+" to node = "+p.getValue().getTcpPort());
+                logger.info("Sending msg = "+msg+" to node = "+p.getValue().getTcpPort());
                 tcpConnection.send(msg,p.getValue().getTcpPort());
             }catch (Exception e){
                 e.printStackTrace();
@@ -51,13 +56,16 @@ public class ClusterOps {
     }
 
     public void sendReleaseMsg(){
+        messagePriorityQueue.getPriorityMessageQueue().remove(systemSettings.getNodeId());
         for(Map.Entry<String,Message> p:messagePriorityQueue.getPriorityMessageQueue().entrySet()){
+            logger.info("Sending OK to Node "+p.getKey());
             try{
                 sendOK(p.getKey());
             }catch (Exception e){
                 e.printStackTrace();
             }
         }
+        messagePriorityQueue.getPriorityMessageQueue().clear();
     }
 
     public boolean canExecuteCS(){
@@ -76,6 +84,7 @@ public class ClusterOps {
 
     public void addToDeferredRequests(Message message){
         Map<String,Message> messageMap=messagePriorityQueue.getPriorityMessageQueue();
+        //logger.info(messageMap.containsKey(message.getNodeId()));
         if(!messageMap.containsKey(message.getNodeId())){
             messageMap.put(message.getNodeId(),message);
         }
@@ -91,7 +100,7 @@ public class ClusterOps {
     }
 
     public void handleOK(String nodeId){
-        System.out.println("Handling ok for node "+nodeId);
+        logger.info("Handling ok for node "+nodeId);
         recievedSignal.put(nodeId,1);
     }
 

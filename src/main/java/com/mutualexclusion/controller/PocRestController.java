@@ -24,7 +24,7 @@ public class PocRestController {
         riccartAgarwalaME.request(createMessage(),systemSettings.getNodeId());
         riccartAgarwalaME.executeCS(null);
 
-        return "Working";
+        return "";
     }
 
     private Message createMessage(){
